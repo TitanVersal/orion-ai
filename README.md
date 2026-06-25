@@ -9,8 +9,7 @@ The project includes a futuristic web dashboard called **Aurora OS**, which acts
 **Think. Plan. Act. Learn.**
 
 ## Current Release
-
-**v1.0 — Mission Control Release**
+**v1.5 — Command Approval System**
 
 ## Core Capabilities
 
@@ -24,6 +23,10 @@ The project includes a futuristic web dashboard called **Aurora OS**, which acts
 - Live activity timeline
 - Tool-level instrumentation
 - Project launcher panel
+- Persistent memory database
+- Memory Matrix dashboard panel
+- Mission Planner System
+- Structured goal and step tracking
 
 ## Architecture
 
@@ -43,3 +46,5 @@ Tool Router
 Project Memory / Notes / Developer Tools
 ↓
 Activity Timeline
+
+- [Screenshot Showcase](docs/screenshot-showcase.md)

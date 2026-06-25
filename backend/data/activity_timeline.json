@@ -1,51 +1,30 @@
 [
   {
     "id": 1,
-    "timestamp": "2026-06-25T17:02:45",
-    "type": "PROJECTS_VIEW",
+    "timestamp": "2026-06-25T21:01:38",
+    "type": "MEMORY_VIEW",
     "source": "Aurora OS",
-    "message": "Aurora OS requested the project launcher list."
-  },
-  {
+    "message": "Aurora OS requested persistent memory items."
+  }
+]  {
     "id": 2,
-    "timestamp": "2026-06-25T17:03:03",
-    "type": "USER_REQUEST",
-    "source": "Aurora OS Chat",
-    "message": "Check system status"
+    "timestamp": "2026-06-25T21:01:35",
+    "type": "MEMORY_VIEW",
+    "source": "Aurora OS",
+    "message": "Aurora OS requested persistent memory items."
   },
   {
     "id": 3,
-    "timestamp": "2026-06-25T17:03:03",
-    "type": "AGENT_START",
-    "source": "O.R.I.O.N.",
-    "message": "O.R.I.O.N. started processing the request."
+    "timestamp": "2026-06-25T21:01:35",
+    "type": "MISSIONS_VIEW",
+    "source": "Aurora OS",
+    "message": "Aurora OS requested mission planner records."
   },
   {
     "id": 4,
-    "timestamp": "2026-06-25T17:03:07",
-    "type": "TOOL_START",
-    "source": "get_system_status",
-    "message": "get_system_status started with input: {'args': [], 'kwargs': {}}"
-  },
-  {
-    "id": 5,
-    "timestamp": "2026-06-25T17:03:07",
-    "type": "TOOL_COMPLETE",
-    "source": "get_system_status",
-    "message": "get_system_status completed with result: Current working directory: /home/titanvx/O.R.I.O.N/orion-ai\nPython executable available: yes\nO.R.I.O.N. safe developer tools: online\nSafe base path: /home/titanvx/O.R.I.O.N/orion-ai"
-  },
-  {
-    "id": 6,
-    "timestamp": "2026-06-25T17:03:10",
-    "type": "AGENT_COMPLETE",
-    "source": "O.R.I.O.N.",
-    "message": "O.R.I.O.N. generated a final response."
-  },
-  {
-    "id": 7,
-    "timestamp": "2026-06-25T17:12:02",
-    "type": "PROJECTS_VIEW",
+    "timestamp": "2026-06-25T21:01:38",
+    "type": "MISSIONS_VIEW",
     "source": "Aurora OS",
-    "message": "Aurora OS requested the project launcher list."
+    "message": "Aurora OS requested mission planner records."
   }
 ]

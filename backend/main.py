@@ -26,6 +26,21 @@ from tools.dev_tools import (
     run_safe_command,
 )
 
+from tools.memory_tools import (
+    remember_information,
+    search_persistent_memory,
+    list_recent_persistent_memory,
+)
+
+from tools.mission_tools import (
+    create_mission,
+    list_missions,
+    read_mission,
+    update_mission_status,
+    update_mission_step_status,
+    add_mission_step,
+)
+
 
 load_dotenv(dotenv_path="backend/.env")
 

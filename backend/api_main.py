@@ -3,7 +3,8 @@ import asyncio
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -21,6 +22,20 @@ from agents import Agent, Runner, SQLiteSession
 from core.prompt import ORION_SYSTEM_PROMPT
 
 from core.activity import log_activity, get_recent_activity, clear_activity
+
+from core.persistent_memory import init_memory_db, list_recent_memory, search_memory_items
+
+from core.mission_planner import (
+    init_mission_db,
+    list_mission_records,
+    get_mission_record,
+)
+
+from core.approvals import (
+    init_approval_db,
+    list_approval_requests,
+    update_approval_status,
+)
 
 from tools.safe_tools import (
     create_note,
@@ -45,6 +60,30 @@ from tools.dev_tools import (
     read_project_file,
     write_project_file,
     run_safe_command,
+)
+
+from tools.dev_tools import (
+    get_system_status,
+    list_directory,
+    read_project_file,
+    write_project_file,
+    run_safe_command,
+    execute_approved_dev_action,
+)
+
+from tools.memory_tools import (
+    remember_information,
+    search_persistent_memory,
+    list_recent_persistent_memory,
+)
+
+from tools.mission_tools import (
+    create_mission,
+    list_missions,
+    read_mission,
+    update_mission_status,
+    update_mission_step_status,
+    add_mission_step,
 )
 
 
@@ -121,6 +160,20 @@ class ActivityEvent(BaseModel):
     message: str
 
 
+class MemoryItem(BaseModel):
+    id: int
+    category: str
+    title: str
+    content: str
+    source: str
+    importance: int
+    created_at: str
+    updated_at: str
+
+
+class MemoryResponse(BaseModel):
+    items: List[MemoryItem]
+
 class ActivityResponse(BaseModel):
     events: List[ActivityEvent]
 
@@ -133,6 +186,52 @@ class ProjectItem(BaseModel):
     updated_at: Optional[str] = None
 
 
+class MissionStepItem(BaseModel):
+    id: int
+    mission_id: int
+    position: int
+    title: str
+    details: str
+    status: str
+    created_at: str
+    updated_at: str
+
+
+class ApprovalItem(BaseModel):
+    id: int
+    action_type: str
+    title: str
+    description: str
+    payload: Dict[str, Any]
+    risk_level: str
+    status: str
+    result: str
+    source: str
+    created_at: str
+    updated_at: str
+
+
+class ApprovalsResponse(BaseModel):
+    approvals: List[ApprovalItem]
+
+
+class MissionItem(BaseModel):
+    id: int
+    title: str
+    goal: str
+    status: str
+    priority: int
+    created_at: str
+    updated_at: str
+
+
+class MissionDetailItem(MissionItem):
+    steps: List[MissionStepItem] = []
+
+
+class MissionsResponse(BaseModel):
+    missions: List[MissionItem]
+
 class ProjectsResponse(BaseModel):
     projects: List[ProjectItem]
 
@@ -140,7 +239,7 @@ class ProjectsResponse(BaseModel):
 def root():
     return {
         "name": "O.R.I.O.N.",
-        "version": "1.0.0",
+        "version": "1.2.0",
         "status": "online",
         "mode": "Aurora OS API Bridge",
     }
@@ -177,7 +276,7 @@ def load_project_items() -> List[ProjectItem]:
 def status():
     return SystemStatusResponse(
         name="O.R.I.O.N.",
-        version="1.0.0",
+        version="1.5.0",
         mode="Aurora OS Dashboard",
         status="online",
         tagline="Think. Plan. Act. Learn.",
@@ -193,6 +292,8 @@ def status():
             "Tool-Level Instrumentation",
 	    "Project Launcher Panel",
 	    "Mission Control Release",
+	   "UI Polish + Screenshot Showcase",
+	    "Persistent Memory Upgrade",
         ],
     )
 
@@ -250,6 +351,7 @@ def mission():
             "Live activity timeline",
             "Tool-level instrumentation",
             "Project launcher",
+	    "Mission Planner System",
         ],
         "safety_model": [
             "No uncontrolled destructive commands",
@@ -264,7 +366,7 @@ def health():
     return {
         "status": "healthy",
         "system": "O.R.I.O.N.",
-        "version": "1.0.0",
+        "version": "1.5.0",
         "message": "O.R.I.O.N. Mission Control backend is operational.",
     }
 
@@ -286,6 +388,7 @@ def mission():
             "Live activity timeline",
             "Tool-level instrumentation",
             "Project launcher",
+	    "Command Approval System",
         ],
         "safety_model": [
             "No uncontrolled destructive commands",
@@ -294,6 +397,88 @@ def mission():
             "Activity and tool execution logging",
         ],
     }
+
+@app.get("/api/memory", response_model=MemoryResponse)
+def memory_items():
+    log_activity("MEMORY_VIEW", "Aurora OS requested persistent memory items.", "Aurora OS")
+    return MemoryResponse(items=list_recent_memory(limit=20))
+
+
+@app.get("/api/memory/search", response_model=MemoryResponse)
+def memory_search(q: str):
+    log_activity("MEMORY_SEARCH", f"Aurora OS searched memory for: {q}", "Aurora OS")
+    return MemoryResponse(items=search_memory_items(query=q, limit=20))
+
+
+@app.get("/api/missions", response_model=MissionsResponse)
+def missions():
+    log_activity("MISSIONS_VIEW", "Aurora OS requested mission planner records.", "Aurora OS")
+    return MissionsResponse(missions=list_mission_records(limit=20))
+
+
+@app.get("/api/missions/{mission_id}", response_model=MissionDetailItem)
+def mission_detail(mission_id: int):
+    mission = get_mission_record(mission_id)
+
+    if not mission:
+        log_activity("MISSION_OPEN_FAILED", f"Mission not found: {mission_id}", "Aurora OS")
+        return MissionDetailItem(
+            id=mission_id,
+            title="Mission not found",
+            goal="No mission found with that ID.",
+            status="missing",
+            priority=0,
+            created_at="",
+            updated_at="",
+            steps=[],
+        )
+
+    log_activity("MISSION_OPEN", f"Mission opened: {mission['title']}", "Aurora OS")
+    return MissionDetailItem(**mission)
+
+
+@app.get("/api/approvals", response_model=ApprovalsResponse)
+def approvals():
+    log_activity("APPROVALS_VIEW", "Aurora OS requested command approval queue.", "Aurora OS")
+    return ApprovalsResponse(approvals=list_approval_requests(limit=30))
+
+
+@app.post("/api/approvals/{approval_id}/approve")
+def approve_request(approval_id: int):
+    log_activity("APPROVAL_APPROVE", f"Approval request approved: {approval_id}", "Aurora OS")
+
+    try:
+        result = execute_approved_dev_action(approval_id)
+        update_approval_status(approval_id, "approved", result)
+
+        log_activity("APPROVAL_EXECUTED", f"Approval {approval_id} executed: {result}", "O.R.I.O.N.")
+        return {
+            "status": "approved",
+            "approval_id": approval_id,
+            "result": result,
+        }
+
+    except Exception as error:
+        update_approval_status(approval_id, "failed", str(error))
+        log_activity("APPROVAL_FAILED", f"Approval {approval_id} failed: {error}", "O.R.I.O.N.")
+        return {
+            "status": "failed",
+            "approval_id": approval_id,
+            "result": str(error),
+        }
+
+
+@app.post("/api/approvals/{approval_id}/reject")
+def reject_request(approval_id: int):
+    update_approval_status(approval_id, "rejected", "Rejected by user.")
+    log_activity("APPROVAL_REJECTED", f"Approval request rejected: {approval_id}", "Aurora OS")
+
+    return {
+        "status": "rejected",
+        "approval_id": approval_id,
+        "result": "Rejected by user.",
+    }
+
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):

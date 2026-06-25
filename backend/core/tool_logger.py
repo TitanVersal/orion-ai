@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any, Callable
 
-from core.activity import log_activity
+from backend.core.activity import log_activity
 
 
 def _shorten(value: Any, limit: int = 220) -> str:

@@ -33,10 +33,64 @@ type ProjectItem = {
   updated_at?: string | null;
 };
 
+
+type MemoryItem = {
+  id: number;
+  category: string;
+  title: string;
+  content: string;
+  source: string;
+  importance: number;
+  created_at: string;
+  updated_at: string;
+};
+
+
+type MissionItem = {
+  id: number;
+  title: string;
+  goal: string;
+  status: string;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+};
+
+type MissionStepItem = {
+  id: number;
+  mission_id: number;
+  position: number;
+  title: string;
+  details: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type ApprovalItem = {
+  id: number;
+  action_type: string;
+  title: string;
+  description: string;
+  payload: Record<string, unknown>;
+  risk_level: string;
+  status: string;
+  result: string;
+  source: string;
+  created_at: string;
+  updated_at: string;
+};
+
+
+
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
   const [message, setMessage] = useState("");
+const [memoryItems, setMemoryItems] = useState<MemoryItem[]>([]);
 
+const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
+
+const [missions, setMissions] = useState<MissionItem[]>([]);
 const [projects, setProjects] = useState<ProjectItem[]>([]);
 const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
 
@@ -80,6 +134,96 @@ async function loadProjects() {
   }
 }
 
+async function loadMemory() {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/memory");
+    const data = await response.json();
+    setMemoryItems(data.items || []);
+  } catch {
+    setMemoryItems([]);
+  }
+}
+
+async function loadMissions() {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/missions");
+    const data = await response.json();
+    setMissions(data.missions || []);
+  } catch {
+    setMissions([]);
+  }
+}
+
+async function loadApprovals() {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/approvals");
+    const data = await response.json();
+    setApprovals(data.approvals || []);
+  } catch {
+    setApprovals([]);
+  }
+}
+
+async function approveAction(approvalId: number) {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/approvals/${approvalId}/approve`,
+      { method: "POST" }
+    );
+
+    const data = await response.json();
+
+    setMessages((current) => [
+      ...current,
+      {
+        role: "orion",
+        content: `Approval ${approvalId} approved.\n\n${data.result}`,
+      },
+    ]);
+
+    await loadApprovals();
+    await loadActivity();
+  } catch {
+    setMessages((current) => [
+      ...current,
+      {
+        role: "orion",
+        content: `Approval ${approvalId} could not be executed.`,
+      },
+    ]);
+  }
+}
+
+async function rejectAction(approvalId: number) {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/approvals/${approvalId}/reject`,
+      { method: "POST" }
+    );
+
+    const data = await response.json();
+
+    setMessages((current) => [
+      ...current,
+      {
+        role: "orion",
+        content: `Approval ${approvalId} rejected.\n\n${data.result}`,
+      },
+    ]);
+
+    await loadApprovals();
+    await loadActivity();
+  } catch {
+    setMessages((current) => [
+      ...current,
+      {
+        role: "orion",
+        content: `Approval ${approvalId} could not be rejected.`,
+      },
+    ]);
+  }
+}
+
 async function openProject(project: ProjectItem) {
   setSelectedProject(project);
 
@@ -111,6 +255,9 @@ async function openProject(project: ProjectItem) {
 
       const data = await response.json();
 	await loadActivity();
+	await loadMemory();
+	await loadMissions();
+	await loadApprovals();
 
       setMessages((current) => [
         ...current,
@@ -135,9 +282,15 @@ useEffect(() => {
   loadStatus();
   loadActivity();
   loadProjects();
+  loadMemory();
+  loadMissions();
+  loadApprovals();
 
   const timer = setInterval(() => {
     loadActivity();
+    loadMemory();
+    loadMissions();
+    loadApprovals();
   }, 3000);
 
   return () => clearInterval(timer);
@@ -183,7 +336,7 @@ useEffect(() => {
                 </p>
               </div>
               <span className="rounded-full border border-cyan-400/30 px-3 py-1 text-xs text-cyan-300">
-                v1.0
+                v1.5
               </span>
             </div>
 
@@ -245,6 +398,131 @@ useEffect(() => {
             </section>
 
 
+
+<section className="rounded-[2rem] border border-cyan-400/20 bg-white/[0.06] p-5 backdrop-blur-xl">
+  <div className="mb-4 flex items-center justify-between">
+    <div>
+      <h2 className="text-xl font-bold">Command Approval</h2>
+      <p className="text-sm text-slate-400">
+        Manual approval gate for file and command actions
+      </p>
+    </div>
+    <span className="rounded-full border border-cyan-400/30 px-3 py-1 text-xs text-cyan-300">
+      {approvals.filter((item) => item.status === "pending").length} pending
+    </span>
+  </div>
+
+  <div className="max-h-80 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/30 p-4">
+    {approvals.length === 0 ? (
+      <p className="text-sm text-slate-500">
+        No approval requests yet.
+      </p>
+    ) : (
+      approvals.map((approval) => (
+        <div
+          key={approval.id}
+          className="rounded-2xl border border-white/10 bg-white/5 p-3"
+        >
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-cyan-400/20 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+              {approval.status}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Risk: {approval.risk_level}
+            </span>
+          </div>
+
+          <h3 className="text-sm font-semibold text-slate-100">
+            #{approval.id} — {approval.title}
+          </h3>
+
+          <p className="mt-1 text-sm leading-5 text-slate-400">
+            {approval.description}
+          </p>
+
+          <p className="mt-2 text-xs text-slate-500">
+            Type: {approval.action_type}
+          </p>
+
+          {approval.result && (
+            <p className="mt-2 whitespace-pre-wrap rounded-xl border border-white/10 bg-black/30 p-2 text-xs text-slate-400">
+              {approval.result}
+            </p>
+          )}
+
+          {approval.status === "pending" && (
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => approveAction(approval.id)}
+                className="rounded-xl bg-cyan-300 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-200"
+              >
+                Approve
+              </button>
+
+              <button
+                onClick={() => rejectAction(approval.id)}
+                className="rounded-xl border border-red-400/30 px-3 py-2 text-xs font-bold text-red-200 transition hover:bg-red-500/10"
+              >
+                Reject
+              </button>
+            </div>
+          )}
+        </div>
+      ))
+    )}
+  </div>
+</section>
+
+<section className="rounded-[2rem] border border-cyan-400/20 bg-white/[0.06] p-5 backdrop-blur-xl">
+  <div className="mb-4 flex items-center justify-between">
+    <div>
+      <h2 className="text-xl font-bold">Mission Planner</h2>
+      <p className="text-sm text-slate-400">
+        Structured O.R.I.O.N. goals and action plans
+      </p>
+    </div>
+    <span className="rounded-full border border-cyan-400/30 px-3 py-1 text-xs text-cyan-300">
+      {missions.length} missions
+    </span>
+  </div>
+
+  <div className="max-h-72 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/30 p-4">
+    {missions.length === 0 ? (
+      <p className="text-sm text-slate-500">
+        No missions yet. Ask O.R.I.O.N. to create a mission.
+      </p>
+    ) : (
+      missions.map((mission) => (
+        <button
+          key={mission.id}
+          onClick={() =>
+            setMessage(
+              `Read mission ${mission.id}. Then tell me the next best action.`
+            )
+          }
+          className="w-full rounded-2xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-cyan-400/40 hover:bg-cyan-500/10"
+        >
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-cyan-400/20 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-300">
+              {mission.status}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Priority {mission.priority}
+            </span>
+          </div>
+
+          <h3 className="text-sm font-semibold text-slate-100">
+            {mission.title}
+          </h3>
+          <p className="mt-1 text-sm leading-5 text-slate-400">
+            {mission.goal}
+          </p>
+        </button>
+      ))
+    )}
+  </div>
+</section>
+
 <section className="rounded-3xl border border-cyan-400/20 bg-white/5 p-5 backdrop-blur">
   <div className="mb-4 flex items-center justify-between">
     <div>
@@ -254,9 +532,56 @@ useEffect(() => {
       </p>
     </div>
     <span className="rounded-full border border-cyan-400/30 px-3 py-1 text-xs text-cyan-300">
-      v1.0
+      v1.5
     </span>
   </div>
+
+
+<section className="rounded-[2rem] border border-cyan-400/20 bg-white/[0.06] p-5 backdrop-blur-xl">
+  <div className="mb-4 flex items-center justify-between">
+    <div>
+      <h2 className="text-xl font-bold">Memory Matrix</h2>
+      <p className="text-sm text-slate-400">
+        Persistent O.R.I.O.N. long-term memory
+      </p>
+    </div>
+    <span className="rounded-full border border-cyan-400/30 px-3 py-1 text-xs text-cyan-300">
+      {memoryItems.length} items
+    </span>
+  </div>
+
+  <div className="max-h-72 space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/30 p-4">
+    {memoryItems.length === 0 ? (
+      <p className="text-sm text-slate-500">
+        No persistent memories yet. Ask O.R.I.O.N. to remember something.
+      </p>
+    ) : (
+      memoryItems.map((item) => (
+        <div
+          key={item.id}
+          className="rounded-2xl border border-white/10 bg-white/5 p-3"
+        >
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <span className="rounded-full border border-violet-400/20 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-violet-300">
+              {item.category}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Priority {item.importance}
+            </span>
+          </div>
+
+          <h3 className="text-sm font-semibold text-slate-100">
+            {item.title}
+          </h3>
+          <p className="mt-1 text-sm leading-5 text-slate-400">
+            {item.content}
+          </p>
+        </div>
+      ))
+    )}
+  </div>
+</section>
+
 
   <div className="grid gap-3">
     {projects.length === 0 ? (

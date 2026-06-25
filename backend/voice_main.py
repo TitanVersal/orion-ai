@@ -27,6 +27,21 @@ from tools.dev_tools import (
     write_project_file,
     run_safe_command,
 )
+
+from tools.memory_tools import (
+    remember_information,
+    search_persistent_memory,
+    list_recent_persistent_memory,
+)
+
+from tools.mission_tools import (
+    create_mission,
+    list_missions,
+    read_mission,
+    update_mission_status,
+    update_mission_step_status,
+    add_mission_step,
+)
 from voice.voice_io import record_voice, transcribe_voice, speak_text
 
 

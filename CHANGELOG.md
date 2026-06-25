@@ -1,3 +1,59 @@
+## v1.5 — Command Approval System
+
+### Added
+
+- SQLite approval request database
+- Manual approval queue
+- Approval API endpoints
+- Aurora OS Command Approval panel
+- Approval-gated file writing
+- Approval-gated safe command execution
+
+### Changed
+
+- `write_project_file` now creates approval requests before writing files
+- `run_safe_command` now creates approval requests before executing commands
+
+
+## v1.4 — Mission Planner System
+
+### Added
+
+- SQLite Mission Planner database
+- Mission records and mission steps
+- Mission Planner tools
+- Mission API endpoints
+- Aurora OS Mission Planner panel
+- Structured goal-to-action workflow
+
+
+## v1.3 — Persistent Memory Upgrade
+
+### Added
+
+- SQLite persistent memory database
+- Persistent memory tools
+- Memory API endpoints
+- Aurora OS Memory Matrix panel
+- Searchable long-term memory foundation
+
+
+## v1.2 — UI Polish + Screenshot Showcase
+
+### Added
+
+- Polished Aurora OS dashboard layout
+- Quick command buttons
+- Improved Neural Core panel
+- Improved Project Launcher styling
+- Improved Activity Timeline styling
+- Screenshot showcase documentation
+
+### Changed
+
+- Updated frontend release badge to v1.2
+- Updated backend API version to v1.2
+
 # Changelog
 
 ## v1.1 — GitHub + Portfolio Release Prep
