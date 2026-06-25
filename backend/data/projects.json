@@ -1,0 +1,11 @@
+{
+  "o.r.i.o.n._release_check": {
+    "name": "O.R.I.O.N. Release Check",
+    "type": "mission",
+    "description": "Verify the O.R.I.O.N. system is working after v1.6. Steps: check system status, list project directory, run safe command git status, create a generated file called release_check.md with release verification notes.",
+    "status": "active",
+    "created_at": "2026-06-25T22:12:33",
+    "updated_at": "2026-06-25T22:12:33",
+    "notes": []
+  }
+}

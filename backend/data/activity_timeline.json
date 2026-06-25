@@ -1,30 +1,16 @@
 [
   {
     "id": 1,
-    "timestamp": "2026-06-25T21:01:38",
-    "type": "MEMORY_VIEW",
+    "timestamp": "2026-06-26T01:19:05",
+    "type": "MISSIONS_VIEW",
     "source": "Aurora OS",
-    "message": "Aurora OS requested persistent memory items."
-  }
-]  {
+    "message": "Aurora OS requested mission planner records."
+  },
+  {
     "id": 2,
-    "timestamp": "2026-06-25T21:01:35",
-    "type": "MEMORY_VIEW",
+    "timestamp": "2026-06-26T01:19:05",
+    "type": "APPROVALS_VIEW",
     "source": "Aurora OS",
-    "message": "Aurora OS requested persistent memory items."
-  },
-  {
-    "id": 3,
-    "timestamp": "2026-06-25T21:01:35",
-    "type": "MISSIONS_VIEW",
-    "source": "Aurora OS",
-    "message": "Aurora OS requested mission planner records."
-  },
-  {
-    "id": 4,
-    "timestamp": "2026-06-25T21:01:38",
-    "type": "MISSIONS_VIEW",
-    "source": "Aurora OS",
-    "message": "Aurora OS requested mission planner records."
+    "message": "Aurora OS requested command approval queue."
   }
 ]

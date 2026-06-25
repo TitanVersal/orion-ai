@@ -1,3 +1,31 @@
+## v1.7 — Mission Run History + Execution Reports
+
+### Added
+
+- SQLite mission run history database
+- Mission run API endpoints
+- Mission execution cycle recording
+- Mission report generation endpoint
+- Aurora OS Mission Run History panel
+- Report button for Mission Planner cards
+
+
+## v1.6 — Controlled Autonomous Mission Execution Loop
+
+### Added
+
+- One-step mission execution cycle
+- Mission run API endpoint
+- Aurora OS Run Next Step button
+- Controlled autonomous workflow using existing safety tools
+- Approval-aware mission execution logic
+
+### Safety
+
+- O.R.I.O.N. executes only one mission step per cycle
+- File writing and command execution still require approval
+- Unsafe commands remain blocked
+
 ## v1.5 — Command Approval System
 
 ### Added
